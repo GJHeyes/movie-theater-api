@@ -6,3 +6,5 @@ showsRouter.post('/', async(req,res)=>{
     const show = await Show.create(req.body)
     res.status(200).send({show})
 })
+
+module.exports = showsRouter;
