@@ -14,9 +14,6 @@ showsRouter.get('/', async(req,res)=>{
 
 //find one show
 showsRouter.get('/:showId', getShow, async(req,res)=>{
-    if(req.show.isEmpty()){
-        return res.status(400).send(`${req.params.showId} does not match any shows`)
-    }
     res.status(200).send(req.show)
 })
 
