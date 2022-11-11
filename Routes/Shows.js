@@ -3,6 +3,7 @@ const showsRouter = Router()
 const {Show} = require('../models/index')
 const checkErrors = require('../middleware/checkErrors')
 const getShow = require('../middleware/getShow')
+const checkGenre = require('../middleware/checkGenre')
 const {param} = require('express-validator')
 
 //find all shows
@@ -13,19 +14,22 @@ showsRouter.get('/', async(req,res)=>{
 
 //find one show
 showsRouter.get('/:showId', getShow, async(req,res)=>{
+    if(req.show.isEmpty()){
+        return res.status(400).send(`${req.params.showId} does not match any shows`)
+    }
     res.status(200).send(req.show)
 })
 
 //return all shows with a certain genre
-showsRouter.get('/genres/:genre', async(req,res)=>{
-    const show = await Show.findAll({where: {genre: req.params.genre}})
+showsRouter.get('/genres/:genre',
+    checkGenre,
+    async(req,res)=>{
     res.status(200).send({show})
 })
 
 //update show to watched
 showsRouter.put('/:showId/watched', getShow, async(req,res)=>{
-    req.show.set({status: "watched"})
-    await req.show.save()
+    req.show.update({status: "watched"})
     res.status(200).send(`${req.show.title} has now been ${req.show.status}`)
 })
 
@@ -37,8 +41,7 @@ showsRouter.put(
     checkErrors,
     getShow, 
     async(req,res)=>{
-    req.show.set({rating: req.params.rating})
-    await req.show.save()
+    req.show.update({rating: req.params.rating})
     res.status(200).send(`${req.show.title} has now been updated to a ${req.show.rating} rating`)
 })
 
@@ -51,8 +54,7 @@ showsRouter.put(
     checkErrors,
     getShow,
     async(req,res)=>{
-    req.show.set({status: req.params.update.toLowerCase()})
-    req.show.save()
+    req.show.update({status: req.params.update.toLowerCase()})
     res.status(200).send(`${req.show.title} is now ${req.show.status}`)
 })
 

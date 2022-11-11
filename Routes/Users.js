@@ -27,8 +27,7 @@ userRouter.get('/:userId/shows', async(req,res)=>{
 
 //add a show to a user if they've watched it
 userRouter.put('/:userId/shows/:showId',getUser, getShow, async(req,res)=>{
-    req.show.set({userId: req.params.userId})
-    req.show.save()
+    req.show.update({userId: req.params.userId})
     res.status(200).send(`${req.user.username} has now watched ${req.show.title}`)
 })
 
