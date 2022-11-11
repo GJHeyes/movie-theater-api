@@ -50,7 +50,6 @@ showsRouter.put(
     checkErrors,
     getShow,
     async(req,res)=>{
-
         if(req.params.update === req.show.status){
             return res.status(400).send(req.show)
         }
@@ -61,10 +60,9 @@ showsRouter.put(
 )
 
 //delete a show
-showsRouter.delete('/:showId', getShow, async(req,res)=>{
+showsRouter.delete('/delete/:showId', getShow, async(req,res)=>{
+    res.status(200).send(req.show)
     await req.show.destroy()
-    const shows = await Show.findAll()
-    res.status(200).send(shows)
     //res.status(200).send(`${req.show.title} has been removed`)
 })
 
