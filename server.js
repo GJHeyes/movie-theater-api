@@ -1,3 +1,4 @@
+const e = require('express');
 const express = require('express');
 const app = express()
 const showsRouter = require('./Routes/Shows');
@@ -8,7 +9,9 @@ app.use(express.json())
 app.use("/users", userRouter);
 app.use("/shows", showsRouter);
 
-app.listen(3000, async ()=>{
+const port = 3000//Math.floor(Math.random() * 3000 + 3000)
+
+app.listen(port, async ()=>{
     await seed()
-    console.log("Listening on port 3000")
+    console.log(`Listening on port ${port}`)
 })
