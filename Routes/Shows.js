@@ -1,7 +1,7 @@
 const { Router } = require('express')
 const showsRouter = Router()
 const {Show} = require('../models/index')
-const checkUpdate = require('../middleware/checkUpdate')
+const checkErrors = require('../middleware/checkErrors')
 const getShow = require('../middleware/getShow')
 const {param} = require('express-validator')
 
@@ -12,9 +12,8 @@ showsRouter.get('/', async(req,res)=>{
 })
 
 //find one show
-showsRouter.get('/:id', async(req,res)=>{
-    const show = await Show.findByPk(req.params.id)
-    res.status(200).send({show})
+showsRouter.get('/:showId', getShow, async(req,res)=>{
+    res.status(200).send(req.show)
 })
 
 //return all shows with a certain genre
@@ -24,27 +23,43 @@ showsRouter.get('/genres/:genre', async(req,res)=>{
 })
 
 //update show to watched
-showsRouter.put('/:id/watched', getShow, async(req,res)=>{
+showsRouter.put('/:showId/watched', getShow, async(req,res)=>{
     req.show.set({status: "watched"})
-    await show.save()
-    res.status(200).send(`${show.title} has now been ${show.status}`)
+    await req.show.save()
+    res.status(200).send(`${req.show.title} has now been ${req.show.status}`)
+})
+
+//change rating
+showsRouter.put(
+    '/:showId/:rating', 
+    param('rating').not().isEmpty(),
+    param('rating').isNumeric(),
+    checkErrors,
+    getShow, 
+    async(req,res)=>{
+    req.show.set({rating: req.params.rating})
+    await req.show.save()
+    res.status(200).send(`${req.show.title} has now been updated to a ${req.show.rating} rating`)
 })
 
 //update show to ongoing or cancelled
 showsRouter.put(
-    '/:id/updates/:update',
+    '/:showId/updates/:update',
     param('update').isLength({min: 5, max: 25}),
-    checkUpdate,
+    param('update').not().isEmpty(),
+    param('update').isAlpha(),
+    checkErrors,
     getShow,
     async(req,res)=>{
-    req.show.set({status: req.params.update})
-    res.status(200).send(`${show.title} is now ${show.status}`)
+    req.show.set({status: req.params.update.toLowerCase()})
+    req.show.save()
+    res.status(200).send(`${req.show.title} is now ${req.show.status}`)
 })
 
 //delete a show
-showsRouter.delete('/:id', getShow, async(req,res)=>{
+showsRouter.delete('/:showId', getShow, async(req,res)=>{
     req.show.destroy()
-    res.status(200).send(`${show.title} has been removed`)
+    res.status(200).send(`${req.show.title} has been removed`)
 })
 
 module.exports = showsRouter;
