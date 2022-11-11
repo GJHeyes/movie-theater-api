@@ -26,38 +26,38 @@ showsRouter.get('/genres/:genre',
 
 //update show to watched
 showsRouter.put('/:showId/watched', getShow, async(req,res)=>{
-    req.show.update({status: "watched"})
+    await req.show.update({status: "watched"})
     res.status(200).send(`${req.show.title} has now been ${req.show.status}`)
 })
 
 //change rating
 showsRouter.put(
     '/:showId/:rating', 
-    param('rating').not().isEmpty(),
-    param('rating').isNumeric(),
+    param('rating').notEmpty().isNumeric(),
     checkErrors,
     getShow, 
     async(req,res)=>{
-    req.show.update({rating: req.params.rating})
+    await req.show.update({rating: req.params.rating})
     res.status(200).send(`${req.show.title} has now been updated to a ${req.show.rating} rating`)
 })
 
 //update show to ongoing or cancelled
 showsRouter.put(
     '/:showId/updates/:update',
-    param('update').isLength({min: 5, max: 25}),
-    param('update').not().isEmpty(),
-    param('update').isAlpha(),
+    param('update').isLength({min: 5, max: 25}).notEmpty().isAlpha(undefined,{ignore:'-'}),
     checkErrors,
     getShow,
     async(req,res)=>{
-    req.show.update({status: req.params.update.toLowerCase()})
+        if(req.show.status === req.params.update){
+            return res.status(400).send(`${req.show.title} is already ${req.params.update}`)
+        }
+    await req.show.update({status: req.params.update.toLowerCase()})
     res.status(200).send(`${req.show.title} is now ${req.show.status}`)
 })
 
 //delete a show
 showsRouter.delete('/:showId', getShow, async(req,res)=>{
-    req.show.destroy()
+    await req.show.destroy()
     res.status(200).send(`${req.show.title} has been removed`)
 })
 
