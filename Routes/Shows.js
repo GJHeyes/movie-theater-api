@@ -1,9 +1,9 @@
 const { Router } = require('express')
 const showsRouter = Router()
 const {Show} = require('../models/index')
-const checkErrors = require('../middleware/checkErrors')
+const {checkErrors, checkStatus, checkRating} = require('../middleware/checkErrors')
 const getShow = require('../middleware/getShow')
-const checkGenre = require('../middleware/checkGenre')
+const getGenre = require('../middleware/getGenre')
 const {param} = require('express-validator')
 
 //find all shows
@@ -19,7 +19,7 @@ showsRouter.get('/:showId', getShow, async(req,res)=>{
 
 //return all shows with a certain genre
 showsRouter.get('/genres/:genre',
-    checkGenre,
+    getGenre,
     async(req,res)=>{
     res.status(200).send({show})
 })
@@ -33,7 +33,7 @@ showsRouter.put('/:showId/watched', getShow, async(req,res)=>{
 //change rating
 showsRouter.put(
     '/:showId/:rating', 
-    param('rating').notEmpty().isNumeric(),
+    param('rating').notEmpty().isInt({gt:-1,lt:6}),
     checkErrors,
     getShow, 
     async(req,res)=>{
@@ -45,15 +45,17 @@ showsRouter.put(
 showsRouter.put(
     '/:showId/updates/:update',
     param('update').isLength({min: 5, max: 25}).notEmpty().isAlpha(undefined,{ignore:'-'}),
+    checkStatus,
     checkErrors,
     getShow,
     async(req,res)=>{
         if(req.show.status === req.params.update){
             return res.status(400).send(`${req.show.title} is already ${req.params.update}`)
         }
-    await req.show.update({status: req.params.update.toLowerCase()})
-    res.status(200).send(`${req.show.title} is now ${req.show.status}`)
-})
+        await req.show.update({status: req.params.update.toLowerCase()})
+        res.status(200).send(`${req.show.title} is now ${req.show.status}`)
+    }
+)
 
 //delete a show
 showsRouter.delete('/:showId', getShow, async(req,res)=>{
