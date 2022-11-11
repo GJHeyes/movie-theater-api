@@ -1,6 +1,7 @@
 const { Router } = require('express')
 const userRouter = Router()
-const User = require('../models/User')
+const {User,Show} = require('../models/index')
+const getUser = require('../middleware/getUser')
 
 userRouter.post('/', async(req,res)=>{
     const user = await User.create(req.body)
